@@ -8,12 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestOperations;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class PaymentClient {
@@ -68,6 +70,7 @@ public class PaymentClient {
         requestBody.put("paymentmethodid", payment.getPaymentmethodid());
         requestBody.put("amount", payment.getAmount());
         requestBody.put("currency", payment.getCurrency());
+        requestBody.put("paymentnumber", payment.getPaymentnumber());
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -76,10 +79,11 @@ public class PaymentClient {
         return restOperations.postForEntity(url+"/payment/add_queue", request, Payment.class).getBody();
     }
 
-
-    public boolean validateIfPaymentSuccessful(String paymentid){
+    //perform this validation asynchroniously, wait till the payment was inserted into the db
+    @Async
+    public CompletableFuture<Payment> validateIfPaymentSuccessful(String paymentid){
         Payment payment = restOperations.getForObject(url+"/payment/"+paymentid, Payment.class, paymentid);
-        return payment != null;
+        return CompletableFuture.completedFuture(payment);
     }
 
     public List<User> getAllUsersList() {

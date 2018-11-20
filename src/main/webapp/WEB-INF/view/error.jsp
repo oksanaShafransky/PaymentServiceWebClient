@@ -35,6 +35,10 @@
                 <td>${paymentmethodid}</td>
             </tr>
             <tr>
+                <td>Payment Number: </td>
+                <td>${paymentnumber}</td>
+            </tr>
+            <tr>
                 <td>Description: </td>
                 <td>${paymentdescription}</td>
             </tr>
