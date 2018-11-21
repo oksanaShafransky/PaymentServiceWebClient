@@ -13,16 +13,4 @@ public class PaymentClientWebApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(PaymentClientWebApplication.class, args);
 	}
-
-
-/*	@Autowired
-	private PaymentClient paymentClient;
-
-	@Override
-	public void run(String... args) throws Exception {
-		Payment payment1 = paymentClient.getPayment("12345");
-		logger.info("###############Response: {}", payment1);
-		Payment payment2 = paymentClient.getPayment("54321");
-		logger.info("###############Response: {}", payment2);
-	}*/
 }

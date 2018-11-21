@@ -1,26 +1,42 @@
 <%@taglib uri = "http://www.springframework.org/tags/form" prefix = "form"%>
 <script type="text/javascript" language="JavaScript">
-    function filterPaymentMethod(){
-        var list = filterPaymentMethodList(this);
-        var paymentmethodstate = new DynamicOptionList();
-        paymentmethodstate.addDependentFields("payerid","paymenmethodid");
-        paymentmethodstate.addOptions("California","Washington","Oregon");
+    function filterPaymentMethod(sel){
+        var mymethod = "${pageContext.request.getParameterValues("paymentMethodList")}";
+        alert("inside filter method " + mymethod );
+        var list = $.get("${pageContext.request.contextPath}/filter");
+        alert("after filter method " + list.length);
+        $('sel').clear;
+        $.get("${pageContext.request.contextPath}/filter");
+        //$('paymentmethodid').clear;
+        //for (var key in list)
+        //{
+        //    var opt = document.createElement('option');
+        //    opt.text = new_options[key];
+        //    opt.value = key;
+        //    $('paymentmethodid').add(opt, null);
+        //}
+    }
 
-        alert("inside filter method " + this);
+    function filter() {
+        alert("before filter " + '@URL');
+        "${pageContext.request.contextPath}/payment/filter";
+        var urlInsert = '@Url.Action("filter")';
+        $.get(urlInsert, function () {
+            alert("after filter");
+        });
 
-        $('paymentmethodid').empty();
-        for (var key in list)
-        {
-            var opt = document.createElement('option');
-            opt.text = new_options[key];
-            opt.value = key;
-            $('paymentmethodid').add(opt, null);
-        }
     }
 </script>
+
 <html>
 <head>
+    <link rel="icon" type="image/png" href="payment.png" />
     <title>Payment Service</title>
+    <style type="text/css">
+        .error {
+            color: red;
+        }
+    </style>
 </head>
 <body>
 
@@ -28,12 +44,11 @@
 <form:form method = "POST" action = "/add_payment">
     <table>
             <tr>
-                <td><form:label path = "payerid" class="width-50">Payer</form:label></td>
-                <td><form:select path="payerid">
+                <td><form:label name="payerid" path = "payerid" class="width-50">Payer</form:label></td>
+                <td><form:select id="payerid" path="payerid" onchange="filter();">
                     <form:option value="NONE" label="--- Select ---"/>
-                    <form:options items="${payerIdList}" />
-                        <fmt:message key="cf_gender.${item.getCfGender()}" />
-                    <font color="red"><form:errors path="payerid"></form:errors></font>
+                    <form:options items="${payerIdList}"/>
+                    <form:errors path="payerid" cssClass="error" />
                 </form:select>
                 </td>
             </tr>
@@ -42,7 +57,7 @@
                 <td><form:select path="payeeid">
                     <form:option value="NONE" label="--- Select ---"/>
                     <form:options items="${payeeIdList}" />
-                    <font color="red"><form:errors path="payeeid"></form:errors></font>
+                    <form:errors path="payeeid" cssClass="error" />
                 </form:select>
                 </td>
             </tr>
@@ -62,15 +77,14 @@
             <tr>
                 <td><form:label path = "amount">Amount</form:label></td>
                 <td><form:input path = "amount" /></td>
-                <font color="red"><form:errors path="amount"></form:errors></font>
+                <form:errors path="amount" cssClass="error" />
             </tr>
             <tr>
                 <td><form:label path = "paymentmethodid">Payment Method</form:label></td>
-                <td>
-                    <form:select path="paymentmethodid" itemValue="${paymentmethodid}" class="width-50">
+                <td><form:select path="paymentmethodid" itemValue="${paymentmethodid}" class="width-50">
                         <form:option value="NONE" label="--- Select ---"/>
                         <form:options items="${paymentMethodList}"/>
-                        <font color="red"><form:errors path="paymentmethodid"></form:errors></font>
+                        <form:errors path="paymentmethodid" cssClass="error" />
                     </form:select>
                 </td>
             </tr>
@@ -80,7 +94,6 @@
                     <form:select path="paymentnumber" itemValue="${paymentnumber}" class="width-50">
                         <form:option value="NONE" label="--- Select ---"/>
                         <form:options items="${paymentNumberList}"/>
-                        <font color="red"><form:errors path="paymentnumber"></form:errors></font>
                     </form:select>
                 </td>
             </tr>

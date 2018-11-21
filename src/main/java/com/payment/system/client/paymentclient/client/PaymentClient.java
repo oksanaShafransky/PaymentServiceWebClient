@@ -1,4 +1,4 @@
-package com.payment.system.client.paymentclient.PaymentClient;
+package com.payment.system.client.paymentclient.client;
 
 import com.payment.service.dto.beans.Payment;
 import com.payment.service.dto.beans.PaymentMethod;
@@ -45,7 +45,7 @@ public class PaymentClient {
         return restOperations.getForObject(url+"/paymentmethod/"+id, PaymentMethod.class, id);
     }
 
-    public List<UserCredentials> getUserCredentialsByUserId(final String id){
+    public List<UserCredentials> getUserCredentialsByUserIdAndMethod(final String id, final String method){
         ResponseEntity<List<UserCredentials>> responseEntity = restOperations.exchange(url + "/credentials/user/" + id, HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<UserCredentials>>(){});
         return responseEntity.getBody();

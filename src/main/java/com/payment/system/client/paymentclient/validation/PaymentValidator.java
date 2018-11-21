@@ -2,10 +2,12 @@ package com.payment.system.client.paymentclient.validation;
 
 import com.payment.service.dto.beans.Payment;
 import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
+@Component
 public class PaymentValidator implements Validator {
 
     @Override
