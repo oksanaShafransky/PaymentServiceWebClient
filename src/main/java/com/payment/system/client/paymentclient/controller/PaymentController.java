@@ -4,6 +4,7 @@ import com.payment.service.dto.beans.Payment;
 import com.payment.service.dto.beans.PaymentMethod;
 import com.payment.service.dto.beans.User;
 import com.payment.service.dto.beans.UserCredentials;
+import com.payment.service.dto.utils.CurrencyList;
 import com.payment.system.client.paymentclient.client.PaymentClient;
 import com.payment.system.client.paymentclient.validation.PaymentValidator;
 import org.slf4j.Logger;
@@ -40,6 +41,10 @@ public class PaymentController {
         binder.setValidator(validator);
     }
 
+    /**
+     * Load initial page of payment with not selected parameters
+     * @return
+     */
     @RequestMapping(value = "/payment", method = RequestMethod.GET)
     public ModelAndView getInitialView() {
         ModelAndView model = new ModelAndView("payment", "command", new Payment());
@@ -47,7 +52,7 @@ public class PaymentController {
         model.addObject("payeeid", "payeeIdList");
         model.addObject("paymentmethodid", "paymentMethodIdList");
         model.addObject("currency", "currencyList");
-        model.addObject("paymentnumber","userCredentialsList");
+        model.addObject("paymentnumber","paymentNumberList");
 
         return model;
 
@@ -56,12 +61,10 @@ public class PaymentController {
     @ModelAttribute("currencyList")
     private List<String> getCurrencyList(){
         List currency = new ArrayList();
-        currency.add("USD");
-        currency.add("EUR");
-        currency.add("ILS");
-        currency.add("GBP");
-        currency.add("CHY");
-        currency.add("RUB");
+        CurrencyList[] currencies = CurrencyList.values();
+        for (CurrencyList cur:currencies) {
+            currency.add(cur);
+        }
         return currency;
     }
 
@@ -90,18 +93,19 @@ public class PaymentController {
     }
 
     @ModelAttribute("paymentNumberList")
-    public List<String> getPaymentNumberList(String id) {
+    public List<String> getPaymentNumberList(String userid, String methodid) {
         List<String> userCredentialsList = new ArrayList<String>();
-        //List<UserCredentials> userCredentials = paymentClient.getUserCredentialsByUserId(id);
-        //userCredentials.forEach(userCredential->userCredentialsList.add(userCredential.getPaymentnumber()));
+        List<UserCredentials> userCredentials = paymentClient.getAllUserCredentials();
+        //List<UserCredentials> userCredentials = paymentClient.getUserCredentialsByUserIdAndMethod(userid, methodid);
+        userCredentials.forEach(userCredential->userCredentialsList.add(userCredential.getPaymentnumber()));
         return userCredentialsList;
     }
 
     //filter the list of payment methods for concrete selected payer
     @RequestMapping(value = "payment/filter", method = RequestMethod.GET)
-    public List<String> filterPaymentMethodList() {
+    public List<String> filterPaymentMethodList(String user) {
         System.out.println("#######Inside filter");
-        User payer = paymentClient.getUserByMail("dudu@dudu.com");
+        User payer = paymentClient.getUserByMail(user);
         List<UserCredentials> userCredentials = paymentClient.getUserCredentialsByUserIdAndMethod(payer.getUserid(),"");
         List<String> paymentMethodIdList = new ArrayList<String>();
         for (UserCredentials userCred:userCredentials) {
@@ -111,19 +115,27 @@ public class PaymentController {
         return paymentMethodIdList;
     }
 
+    /**
+     * The method send new payment to the server.
+     * The payment is performed asynchronously.
+     * First the payment is sent to the kafka queue and risk engine verification.
+     * Then the method verifies if the payment was added to the database by getById API.
+     * If it was found the success page will be returned.
+     * Otherwise, the error page will be returned.
+     * @param payment
+     * @param result
+     * @param model
+     * @return appropriate response page - result or error
+     */
     @RequestMapping(value = "/add_payment", method = RequestMethod.POST)
     public String addPayment(@ModelAttribute("SpringWeb")@Validated Payment payment,
                              BindingResult result, ModelMap model) {
         User payer = paymentClient.getUserByMail(payment.getPayerid());
         User payee = paymentClient.getUserByMail(payment.getPayeeid());
         PaymentMethod paymentMethod = paymentClient.getPaymentMethodByName(payment.getPaymentmethodid());
-        //List<UserCredentials> userCredentials = paymentClient.getUserCredentialsByUserId(payer.getUserid());
-
-        payment.setPaymentid(UUID.randomUUID().toString());
         payment.setPayerid(payer.getUserid());
         payment.setPayeeid(payee.getUserid());
         payment.setPaymentmethodid(paymentMethod.getPaymentmethodid());
-
 
         model.addAttribute("paymentid", payment.getPaymentid());
         model.addAttribute("payerid", payer.getUserid());
@@ -135,7 +147,7 @@ public class PaymentController {
         model.addAttribute("paymentnumber", payment.getPaymentnumber());
         ResponseEntity<Payment> responseEntity = new ResponseEntity<Payment>(paymentClient.addPayment(payment), HttpStatus.CREATED);
         if(responseEntity.getStatusCode()==HttpStatus.CREATED) {
-            return paymentClient.validateIfPaymentSuccessful(payment.getPaymentid())==null?"error":"result";
+            return paymentClient.validateIfPaymentSuccessful(responseEntity.getBody().getPaymentid())==null?"error":"result";
         } else {
             return "error";
         }

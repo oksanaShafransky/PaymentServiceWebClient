@@ -4,7 +4,7 @@
         var mymethod = "${pageContext.request.getParameterValues("paymentMethodList")}";
         alert("inside filter method " + mymethod );
         var list = $.get("${pageContext.request.contextPath}/filter");
-        alert("after filter method " + list.length);
+        //alert("after filter method " + list.length);
         $('sel').clear;
         $.get("${pageContext.request.contextPath}/filter");
         //$('paymentmethodid').clear;

@@ -4,6 +4,9 @@ import com.payment.service.dto.beans.Payment;
 import com.payment.service.dto.beans.PaymentMethod;
 import com.payment.service.dto.beans.User;
 import com.payment.service.dto.beans.UserCredentials;
+import com.payment.system.client.paymentclient.controller.PaymentController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -19,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 public class PaymentClient {
+    private static final Logger logger = LoggerFactory.getLogger(PaymentClient.class);
     @Autowired
     private RestOperations restOperations;
     private final String url;
@@ -61,9 +65,18 @@ public class PaymentClient {
         return payments;
     }
 
+    public List<UserCredentials> getAllUserCredentials(){
+        ResponseEntity<List<UserCredentials>> response = restOperations.exchange(
+                url+"/credentials/all",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<UserCredentials>>(){});
+        List<UserCredentials> credentials = response.getBody();
+        return credentials;
+    }
+
     public Payment addPayment(Payment payment){
         Map requestBody = new HashMap();
-        requestBody.put("paymentid", payment.getPaymentid());
         requestBody.put("payerid", payment.getPayerid());
         requestBody.put("payeeid", payment.getPayeeid());
         requestBody.put("paymentdescription", payment.getPaymentdescription());
@@ -82,6 +95,12 @@ public class PaymentClient {
     //perform this validation asynchroniously, wait till the payment was inserted into the db
     @Async
     public CompletableFuture<Payment> validateIfPaymentSuccessful(String paymentid){
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e){
+            logger.error("Interrupted exception caught during sleep on validateIfPaymentSuccessful: {}", e.getMessage());
+
+        }
         Payment payment = restOperations.getForObject(url+"/payment/"+paymentid, Payment.class, paymentid);
         return CompletableFuture.completedFuture(payment);
     }
