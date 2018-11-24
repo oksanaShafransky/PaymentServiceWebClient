@@ -8,12 +8,8 @@
 
 <body>
 <h2>Submitted Payment Succeeded</h2>
-    <form:form method = "GET" action = "/payment">
+    <form:form method = "POST" action = "/newpayment" >
         <table>
-            <tr>
-                <td>Payment: </td>
-                <td>${paymentid}</td>
-            </tr>
             <tr>
                 <td>Payer: </td>
                 <td>${payerid}</td>
@@ -31,10 +27,6 @@
                 <td>${amount}</td>
             </tr>
             <tr>
-                <td>Payment Method: </td>
-                <td>${paymentmethodid}</td>
-            </tr>
-            <tr>
                 <td>Payment Number: </td>
                 <td>${paymentnumber}</td>
             </tr>
@@ -42,6 +34,10 @@
                 <td>Description: </td>
                 <td>${paymentdescription}</td>
             </tr>
+            <tr>
+                <td><form:input path = "payerid" value="${payerid}" type="hidden"/></td>
+            </tr>
+
             <tr>
                 <td colspan = "2">
                     <input type = "submit" value = "Additional Payment"/>
