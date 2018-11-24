@@ -1,4 +1,4 @@
-package com.payment.system.client.paymentclient.config;
+package com.web.payment.system.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

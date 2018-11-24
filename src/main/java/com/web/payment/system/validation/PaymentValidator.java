@@ -1,4 +1,4 @@
-package com.payment.system.client.paymentclient.validation;
+package com.web.payment.system.validation;
 
 import com.payment.service.dto.beans.Payment;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package com.payment.system.client.paymentclient.config;
+package com.web.payment.system.config;
 
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
